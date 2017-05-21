@@ -1,0 +1,11 @@
+language: go
+
+go:
+    - tip
+    - 1.8
+    - 1.7
+
+script:
+    - go get -u github.com/golang/lint/golint
+    - go get -u gopkg.in/yaml.v2
+    - make test
