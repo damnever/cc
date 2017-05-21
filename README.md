@@ -1,6 +1,6 @@
-## cc is a very flexible library for configuration management.
+## cc is a Golang library for configuration management.
 
-[![Build Status](https://travis-ci.org/damnever/cc.svg?branch=master)](https://travis-ci.org/damnever/cc) [![GoDoc](https://godoc.org/github.com/damnever/cc?status.svg)](https://godoc.org/github.com/damnever/cc)
+[![Build Status](https://travis-ci.org/damnever/cc.svg?branch=master)](https://travis-ci.org/damnever/cc) [![Go Report Card](https://goreportcard.com/badge/github.com/damnever/cc)](https://goreportcard.com/report/github.com/damnever/cc) [![GoDoc](https://godoc.org/github.com/damnever/cc?status.svg)](https://godoc.org/github.com/damnever/cc)
 
 Only support JSON and YAML.
 
@@ -32,7 +32,7 @@ c.Float("float_env")
 
 #### Default configs
 
-We may wrote the code like this:
+We may write the code like this:
 ```go
 name := "default"
 if c.Has("name") {
