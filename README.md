@@ -1,5 +1,7 @@
 ## cc is a very flexible library for configuration management.
 
+[![Build Status](https://travis-ci.org/damnever/cc.svg?branch=master)](https://travis-ci.org/damnever/cc) [![GoDoc](https://godoc.org/github.com/damnever/cc?status.svg)](https://godoc.org/github.com/damnever/cc)
+
 Only support JSON and YAML.
 
 ### Installation
@@ -48,7 +50,7 @@ b := c.BoolOr("bool", true)
 
 If you want check string value whether it is matched by `regexp`:
 ```go
-s, ok := c.String("name", "^c")
+s, ok := c.StringAnd("name", "^c")
 ```
 Or, the make the string value as a pattern:
 ```go
