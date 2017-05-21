@@ -1,0 +1,22 @@
+{
+    "name": "cc",
+    "map": {
+        "key_one": true,
+        "key_two": false,
+        "child": {
+            "key_three": 33,
+            "key_four": "good"
+        }
+    },
+    "list" : [
+        "element_one",
+        2,
+        3.0,
+        true
+    ],
+    "patterns": {
+        "string_pattern": "^aa{3}a$",
+        "int_pattern": "N%2==1",
+        "float_pattern": "N>=0.3&&N<=0.7"
+    }
+}
