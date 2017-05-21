@@ -39,48 +39,47 @@ func New(s string) (*ReversePolishNotation, error) {
 	popPushOp := func(op string) {
 		priority := priorities[op]
 		for nop > 0 && priorities[operators[nop-1]] >= priority {
-			nop -= 1
 			nop--
 			notation = append(notation, operators[nop])
 		}
 		operators[nop] = op
-		nop += 1
-		i += 1
+		nop++
+		i++
 	}
 
 	for i < n {
 		c := s[i]
 		switch c {
 		case ' ':
-			i += 1
+			i++
 		case ')':
 			for nop > 0 && operators[nop-1] != "(" {
-				nop -= 1
+				nop--
 				notation = append(notation, operators[nop])
 			}
 			if nop == 0 || operators[nop-1] != "(" {
 				return nil, fmt.Errorf("'%v' has no '(' found for ')' at %v", s, i)
 			}
-			nop -= 1
+			nop--
 			if nop > 0 && operators[nop-1] == "!" {
 				notation = append(notation, "!")
-				nop -= 1
+				nop--
 			}
-			i += 1
+			i++
 		case '(':
 			operators[nop] = "("
-			nop += 1
-			i += 1
+			nop++
+			i++
 		case '*', '/', '%', '+', '-':
 			popPushOp(string(c))
 		case '!':
 			next := s[i+1]
 			if next == '(' {
 				operators[nop] = string(c)
-				nop += 1
-				i += 1
+				nop++
+				i++
 			} else if next == '=' {
-				i += 1
+				i++
 				popPushOp(string([]byte{c, next}))
 			} else {
 				return nil, fmt.Errorf("'%v' has invalid token at %v: %v", s, i+1, next)
@@ -89,7 +88,7 @@ func New(s string) (*ReversePolishNotation, error) {
 			op := []byte{c}
 			if s[i+1] == '=' {
 				op = append(op, '=')
-				i += 1
+				i++
 			}
 			popPushOp(string(op))
 		case '|', '&', '=':
@@ -97,7 +96,7 @@ func New(s string) (*ReversePolishNotation, error) {
 			if next != c {
 				return nil, fmt.Errorf("'%v' has invalid token at %v: %v", s, i+1, next)
 			}
-			i += 1
+			i++
 			popPushOp(string([]byte{c, next}))
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			hasDot := false
@@ -113,19 +112,19 @@ func New(s string) (*ReversePolishNotation, error) {
 					break
 				}
 				num = append(num, c)
-				i += 1
+				i++
 			}
 			notation = append(notation, string(num))
 		case 'N':
 			notation = append(notation, "N")
-			i += 1
+			i++
 		default:
 			return nil, fmt.Errorf("'%v' has invalid token at %v: %v", s, i, c)
 		}
 	}
 
 	for nop > 0 {
-		nop -= 1
+		nop--
 		if op := operators[nop]; op != "(" {
 			notation = append(notation, op)
 		}

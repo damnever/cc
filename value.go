@@ -151,7 +151,7 @@ func (v *Value) Duration() time.Duration {
 	return v.DurationOr(0)
 }
 
-// Duration returns the time.Duration value, returns time.Duration(deflt)
+// DurationOr returns the time.Duration value, returns time.Duration(deflt)
 // if not exists.
 func (v *Value) DurationOr(deflt int64) time.Duration {
 	return time.Duration(toInt64(v.v, deflt))
