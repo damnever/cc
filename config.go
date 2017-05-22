@@ -170,6 +170,7 @@ func (c *Config) Config(name string) Configer {
 		case map[interface{}]interface{}:
 			child := NewConfig()
 			child.kv = unknownMapToStringMap(x)
+			c.Set(name, child.kv)
 			return child
 		case Configer:
 			return x
