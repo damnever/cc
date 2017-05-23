@@ -4,6 +4,7 @@ import "time"
 
 // Configer is a abstraction for config.
 type Configer interface {
+	KV() map[string]interface{}
 	Has(name string) bool
 	Must(name string)
 

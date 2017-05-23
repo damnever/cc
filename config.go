@@ -117,6 +117,11 @@ func (c *Config) Merge(config *Config) error {
 	return nil
 }
 
+// KV returns the Config's internal data as a string map.
+func (c *Config) KV() map[string]interface{} {
+	return c.kv
+}
+
 // Has returns true if the name has a value, otherwise false.
 func (c *Config) Has(name string) bool {
 	if env := os.Getenv(name); env != "" {
@@ -141,7 +146,14 @@ func (c *Config) Raw(name string) interface{} {
 
 // Value returns a Valuer by name.
 func (c *Config) Value(name string) Valuer {
-	return NewValue(c.kv[name])
+	v, ok := c.kv[name]
+	if !ok {
+		return NewValue(nil)
+	}
+	if child, ok := v.(Configer); ok {
+		return NewValue(child.KV())
+	}
+	return NewValue(v)
 }
 
 // Pattern returns a Patterner by name.
@@ -165,19 +177,23 @@ func (c *Config) Set(name string, value interface{}) {
 func (c *Config) Config(name string) Configer {
 	if v, exists := c.kv[name]; exists {
 		switch x := v.(type) {
+		case Configer:
+			return x
 		case map[string]interface{}:
-			return NewConfigFrom(x)
+			child := NewConfigFrom(x)
+			c.Set(name, child)
+			return child
 		case map[interface{}]interface{}:
 			child := NewConfig()
 			child.kv = unknownMapToStringMap(x)
-			c.Set(name, child.kv)
+			c.Set(name, child)
 			return child
-		case Configer:
-			return x
 		default:
 		}
 	}
-	return NewConfig()
+	child := NewConfig()
+	c.Set(name, child)
+	return child
 }
 
 // String returns the string value by name, returns "" if not found.

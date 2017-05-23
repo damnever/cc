@@ -103,6 +103,12 @@ func TestConfigGetConfig(t *testing.T) {
 	assert.Check(t, c.Config("unknwn_map").Has("foo"), true)
 	assert.Check(t, c.Config("string_map").Has("foo"), true)
 	assert.Check(t, c.Config("cc").Has("foo"), true)
+
+	ccc := c.Config("non")
+	ccc.Set("test", "good")
+	ccc.Set("good", "bad")
+	ccc = c.Config("non")
+	assert.Check(t, len(c.Value("non").Map()), 2)
 }
 
 func TestConfigGetString(t *testing.T) {
