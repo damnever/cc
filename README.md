@@ -44,11 +44,13 @@ Now, we can write code like this:
 ```go
 name := c.StringOr("name", "cc")  // or c.Must("name")
 b := c.BoolOr("bool", true)
+f := c.FloatOr("float", 3.14)
+i := c.IntOr("int", 33)
 ```
 
 #### Pattern && Validation
 
-If you want check string value whether it is matched by `regexp`:
+If you want to check string value whether it is matched by `regexp`:
 ```go
 s, ok := c.StringAnd("name", "^c")
 ```

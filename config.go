@@ -173,7 +173,7 @@ func (c *Config) Set(name string, value interface{}) {
 	c.kv[name] = value
 }
 
-// Config returns a key-value Configer by name.
+// Config returns a key-value sub Configer by name, the returned Configer can consider as a reference.
 func (c *Config) Config(name string) Configer {
 	if v, exists := c.kv[name]; exists {
 		switch x := v.(type) {
