@@ -36,26 +36,59 @@ func (v *Value) Raw() interface{} {
 	return v.v
 }
 
-// Map returns the value as a map.
+// Config returns the value as a Configer, the modification on returned
+// Configer has no affect to the origin value.
+func (v *Value) Config() Configer {
+	switch x := v.v.(type) {
+	case Configer:
+		val := NewConfig()
+		for kx, kv := range x.KV() {
+			val.kv[kx] = kv
+		}
+		return val
+	case map[string]interface{}:
+		val := NewConfig()
+		for kx, kv := range x {
+			val.kv[kx] = kv
+		}
+		return val
+	case map[interface{}]interface{}:
+		val := NewConfig()
+		val.kv = unknownMapToStringMap(x)
+		return val
+	}
+	return NewConfig()
+}
+
+// Map returns the value as a map, the modification on returned
+// map has no affect to the origin value.
 func (v *Value) Map() map[string]Valuer {
-	if x, ok := v.v.(map[string]interface{}); ok {
+	switch x := v.v.(type) {
+	case Configer:
+		val := x.KV()
+		ms := make(map[string]Valuer, len(val))
+		for kx, vx := range val {
+			ms[kx] = NewValue(vx)
+		}
+		return ms
+	case map[string]interface{}:
 		ms := make(map[string]Valuer, len(x))
 		for kx, vx := range x {
 			ms[kx] = NewValue(vx)
 		}
 		return ms
-	}
-	if x, ok := v.v.(map[interface{}]interface{}); ok {
+	case map[interface{}]interface{}:
 		ms := make(map[string]Valuer, len(x))
-		for kx, vx := range x {
-			ms[fmt.Sprintf("%v", kx)] = NewValue(vx)
+		for kx, kv := range x {
+			ms[fmt.Sprintf("%v", kx)] = NewValue(kv)
 		}
 		return ms
 	}
 	return map[string]Valuer{}
 }
 
-// List returns the value as slice.
+// List returns the value as slice, the modification on returned
+// slice has no affect to the origin value.
 func (v *Value) List() []Valuer {
 	if x, ok := v.v.([]interface{}); ok {
 		vs := make([]Valuer, len(x))

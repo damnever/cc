@@ -40,6 +40,7 @@ type Valuer interface {
 	Exist() bool
 
 	Raw() interface{}
+	Config() Configer
 	Pattern() Patterner
 	Map() map[string]Valuer
 	List() []Valuer

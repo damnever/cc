@@ -22,11 +22,37 @@ func TestValueToPattern(t *testing.T) {
 	}
 }
 
+func TestValueToConfiger(t *testing.T) {
+	check := func(v Valuer) {
+		c := v.Config()
+		assert.Check(t, c.Has("foo"), true)
+		assert.Check(t, c.String("foo"), "bar")
+		c.Set("foo", "baz")
+		assert.Check(t, c.String("foo"), "baz")
+		c2 := v.Config()
+		assert.Check(t, c2.String("foo"), "bar")
+	}
+	check(NewValue(map[string]interface{}{"foo": "bar"}))
+	check(NewValue(map[interface{}]interface{}{"foo": "bar"}))
+	c := NewConfigFrom(map[string]interface{}{"foo": "bar"})
+	check(NewValue(c))
+}
+
 func TestValueToMap(t *testing.T) {
-	v := NewValue(map[string]interface{}{"foo": "bar"})
-	m := v.Map()
-	assert.Check(t, len(m), 1)
-	assert.Check(t, m["foo"].String(), "bar")
+	check := func(v Valuer) {
+		m := v.Map()
+		assert.Check(t, len(m), 1)
+		assert.Check(t, m["foo"].String(), "bar")
+		m["foo"] = NewValue("baz")
+		assert.Check(t, m["foo"].String(), "baz")
+
+		m2 := v.Map()
+		assert.Check(t, m2["foo"].String(), "bar")
+	}
+	check(NewValue(map[string]interface{}{"foo": "bar"}))
+	check(NewValue(map[interface{}]interface{}{"foo": "bar"}))
+	c := NewConfigFrom(map[string]interface{}{"foo": "bar"})
+	check(NewValue(c))
 }
 
 func TestValueToList(t *testing.T) {
@@ -35,6 +61,10 @@ func TestValueToList(t *testing.T) {
 	assert.Check(t, len(l), 2)
 	assert.Check(t, l[0].String(), "bar")
 	assert.Check(t, l[1].String(), "baz")
+	l[0] = NewValue("baz")
+	assert.Check(t, l[0].String(), "baz")
+	l2 := v.List()
+	assert.Check(t, l2[0].String(), "bar")
 }
 
 func TestValueToString(t *testing.T) {
