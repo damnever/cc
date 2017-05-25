@@ -1,7 +1,8 @@
 // Package cc is a very flexible library for configuration management,
 // which is easy to use and support YAML and JSON only.
 //
-// Usage:
+//
+// Usage
 //
 //		c, _ := cc.NewConfigFromFile("./example/example.yaml")  // file must has extension
 //		_ := c.MergeFromFile("./example/example.json") // do not ignore the errors
@@ -20,7 +21,7 @@
 //		c.Float("float_env")
 //
 //
-// Default configs
+// Default Configs
 //
 // We may write the code like this:
 //
@@ -37,7 +38,7 @@
 //		i := c.IntOr("int", 33)
 //
 //
-// Pattern && Validation
+// Pattern and Validation
 //
 // If you want to check string value whether it is matched by regexp:
 //
