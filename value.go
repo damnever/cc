@@ -123,6 +123,15 @@ func (v *Value) StringAnd(pattern string) (string, bool) {
 	return "", false
 }
 
+// StringAndOr returns the string value if pattern matched,
+// otherwise returns the deflt.
+func (v *Value) StringAndOr(pattern string, deflt string) string {
+	if s, ok := v.StringAnd(pattern); ok {
+		return s
+	}
+	return deflt
+}
+
 // Bool returns the bool value, returns false if not exists.
 func (v *Value) Bool() bool {
 	return v.BoolOr(false)
@@ -156,6 +165,15 @@ func (v *Value) IntAnd(pattern string) (int, bool) {
 	return 0, false
 }
 
+// IntAndOr returns the int value if pattern matched,
+// otherwise returns the deflt.
+func (v *Value) IntAndOr(pattern string, deflt int) int {
+	if n, ok := v.IntAnd(pattern); ok {
+		return n
+	}
+	return deflt
+}
+
 // Float returns the float64 value, returns 0.0 if not exists.
 func (v *Value) Float() float64 {
 	return v.FloatOr(0.0)
@@ -179,6 +197,15 @@ func (v *Value) FloatAnd(pattern string) (float64, bool) {
 	return 0.0, false
 }
 
+// FloatAndOr returns the float64 value if pattern matched,
+// otherwise returns the deflt.
+func (v *Value) FloatAndOr(pattern string, deflt float64) float64 {
+	if n, ok := v.FloatAnd(pattern); ok {
+		return n
+	}
+	return deflt
+}
+
 // Duration returns the time.Duration value, returns time.Duration(0) if not exists.
 func (v *Value) Duration() time.Duration {
 	return v.DurationOr(0)
@@ -186,8 +213,24 @@ func (v *Value) Duration() time.Duration {
 
 // DurationOr returns the time.Duration value, returns time.Duration(deflt)
 // if not exists.
-func (v *Value) DurationOr(deflt int64) time.Duration {
-	return time.Duration(toInt64(v.v, deflt))
+func (v *Value) DurationOr(deflt int) time.Duration {
+	return time.Duration(v.IntOr(deflt))
+}
+
+// DurationAnd returns the (time.Duration(value), true) if pattern matched,
+// otherwise (time.Duration(0), false) returned.
+func (v *Value) DurationAnd(pattern string) (time.Duration, bool) {
+	n, ok := v.IntAnd(pattern)
+	return time.Duration(n), ok
+}
+
+// DurationAndOr returns the time.Duration value if pattern matched,
+// otherwise returns the deflt.
+func (v *Value) DurationAndOr(pattern string, deflt int) time.Duration {
+	if d, ok := v.DurationAnd(pattern); ok {
+		return d
+	}
+	return time.Duration(deflt)
 }
 
 // GoString implements the native format for Value

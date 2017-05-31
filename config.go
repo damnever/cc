@@ -225,6 +225,15 @@ func (c *Config) StringAnd(name string, pattern string) (string, bool) {
 	return "", false
 }
 
+// StringAndOr returns the string value by name if pattern matched,
+// otherwise returns the deflt.
+func (c *Config) StringAndOr(name string, pattern string, deflt string) string {
+	if s, ok := c.StringAnd(name, pattern); ok {
+		return s
+	}
+	return deflt
+}
+
 // Bool returns the bool value by name, returns false if not found.
 func (c *Config) Bool(name string) bool {
 	return c.BoolOr(name, false)
@@ -259,7 +268,7 @@ func (c *Config) IntOr(name string, deflt int) int {
 	return deflt
 }
 
-// IntAnd returns the (int value, true) if pattern matched,
+// IntAnd returns the (int value, true) by name if pattern matched,
 // otherwise returns (0, false)
 func (c *Config) IntAnd(name string, pattern string) (int, bool) {
 	if !c.Has(name) {
@@ -270,6 +279,15 @@ func (c *Config) IntAnd(name string, pattern string) (int, bool) {
 		return n, true
 	}
 	return 0, false
+}
+
+// IntAndOr returns the int value by name if pattern matched,
+// otherwise returns the deflt.
+func (c *Config) IntAndOr(name string, pattern string, deflt int) int {
+	if n, ok := c.IntAnd(name, pattern); ok {
+		return n
+	}
+	return deflt
 }
 
 // Float returns the float64 value by name, return 0.0 if not found.
@@ -303,6 +321,15 @@ func (c *Config) FloatAnd(name string, pattern string) (float64, bool) {
 	return 0.0, false
 }
 
+// FloatAndOr returns the float64 value by name if pattern matched,
+// otherwise returns the deflt.
+func (c *Config) FloatAndOr(name string, pattern string, deflt float64) float64 {
+	if n, ok := c.FloatAnd(name, pattern); ok {
+		return n
+	}
+	return deflt
+}
+
 // Duration returns the time.Duration value by name,
 // return time.Duration(0) if not found.
 func (c *Config) Duration(name string) time.Duration {
@@ -311,14 +338,19 @@ func (c *Config) Duration(name string) time.Duration {
 
 // DurationOr returns the time.Duration value by name,
 // return time.Duration(deflt) if not found.
-func (c *Config) DurationOr(name string, deflt int64) time.Duration {
-	if env := os.Getenv(name); env != "" {
-		if n, err := strconv.Atoi(env); err == nil {
-			return time.Duration(n)
-		}
-	}
-	if v, exists := c.kv[name]; exists {
-		return time.Duration(toInt64(v, deflt))
-	}
-	return time.Duration(deflt)
+func (c *Config) DurationOr(name string, deflt int) time.Duration {
+	return time.Duration(c.IntOr(name, deflt))
+}
+
+// DurationAnd returns the (time.Duration(value), true) by name if pattern matched,
+// otherwise (time.Duration(0), false) returned.
+func (c *Config) DurationAnd(name string, pattern string) (time.Duration, bool) {
+	n, ok := c.IntAnd(name, pattern)
+	return time.Duration(n), ok
+}
+
+// DurationAndOr returns the time.Duration value by name if pattern matched,
+// otherwise returns the deflt.
+func (c *Config) DurationAndOr(name string, pattern string, deflt int) time.Duration {
+	return time.Duration(c.IntAndOr(name, pattern, deflt))
 }

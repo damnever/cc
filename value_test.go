@@ -71,12 +71,16 @@ func TestValueToString(t *testing.T) {
 	v := NewValue("wow")
 	assert.Check(t, v.String(), "wow")
 	assert.Check(t, v.StringOr("xx"), "wow")
+
 	res, ok := v.StringAnd("^w")
 	assert.Check(t, ok, true)
 	assert.Check(t, res, "wow")
 	res, ok = v.StringAnd("^o")
 	assert.Check(t, ok, false)
 	assert.Check(t, res, "")
+
+	assert.Check(t, v.StringAndOr("^w", "xx"), "wow")
+	assert.Check(t, v.StringAndOr("^o", "xx"), "xx")
 
 	v = NewValue(1)
 	assert.Check(t, v.String(), "")
@@ -101,13 +105,20 @@ func TestValueToInt(t *testing.T) {
 	v := NewValue(1)
 	assert.Check(t, v.Int(), 1)
 	assert.Check(t, v.IntOr(2), 1)
+
 	res, ok := v.IntAnd("N>0")
 	assert.Check(t, ok, true)
 	assert.Check(t, res, 1)
 
+	assert.Check(t, v.IntAndOr("N>0", 2), 1)
+	assert.Check(t, v.IntAndOr("N>1", 2), 2)
+
 	v = NewValue(1.0)
 	assert.Check(t, v.Int(), 1)
 	assert.Check(t, v.IntOr(2), 1)
+	assert.Check(t, v.IntAndOr("N>0", 2), 1)
+	assert.Check(t, v.IntAndOr("N>1", 2), 2)
+
 	res, ok = v.IntAnd("N<0")
 	assert.Check(t, ok, false)
 	assert.Check(t, res, 0)
@@ -121,13 +132,19 @@ func TestValueToFloat(t *testing.T) {
 	v := NewValue(3.0)
 	assert.Check(t, v.Float(), 3.0)
 	assert.Check(t, v.FloatOr(4), 3.0)
+
 	res, ok := v.FloatAnd("N>=3.0")
 	assert.Check(t, ok, true)
 	assert.Check(t, res, 3.0)
 
+	assert.Check(t, v.FloatAndOr("N>=3.0", 4.0), 3.0)
+	assert.Check(t, v.FloatAndOr("N>3.0", 4.0), 4.0)
+
 	v = NewValue(3)
 	assert.Check(t, v.Float(), 3.0)
 	assert.Check(t, v.FloatOr(4), 3.0)
+	assert.Check(t, v.FloatAndOr("N>=3.0", 4.0), 3.0)
+	assert.Check(t, v.FloatAndOr("N>3.0", 4.0), 4.0)
 
 	v = NewValue("")
 	assert.Check(t, v.Float(), 0.0)
@@ -139,9 +156,21 @@ func TestValueToDuration(t *testing.T) {
 	assert.Check(t, v.Duration(), time.Duration(23))
 	assert.Check(t, v.DurationOr(32), time.Duration(23))
 
+	res, ok := v.DurationAnd("N>=23")
+	assert.Check(t, ok, true)
+	assert.Check(t, res, time.Duration(23))
+	res, ok = v.DurationAnd("N>23")
+	assert.Check(t, ok, false)
+	assert.Check(t, res, time.Duration(0))
+
+	assert.Check(t, v.DurationAndOr("N>=23", 4), time.Duration(23))
+	assert.Check(t, v.DurationAndOr("N>23", 4), time.Duration(4))
+
 	v = NewValue("")
 	assert.Check(t, v.Duration(), time.Duration(0))
 	assert.Check(t, v.DurationOr(32), time.Duration(32))
+
+	assert.Check(t, v.DurationAndOr("N>=3", 4), time.Duration(4))
 }
 
 func TestValueGoString(t *testing.T) {
