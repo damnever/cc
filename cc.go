@@ -19,6 +19,7 @@ type Configer interface {
 	String(name string) string
 	StringOr(name string, deflt string) string
 	StringAnd(name string, pattern string) (string, bool)
+	StringAndOr(name string, pattern string, deflt string) string
 
 	Bool(name string) bool
 	BoolOr(name string, deflt bool) bool
@@ -26,13 +27,17 @@ type Configer interface {
 	Int(name string) int
 	IntOr(name string, deflt int) int
 	IntAnd(name string, pattern string) (int, bool)
+	IntAndOr(name string, pattern string, deflt int) int
 
 	Float(name string) float64
 	FloatOr(name string, deflt float64) float64
 	FloatAnd(name string, pattern string) (float64, bool)
+	FloatAndOr(name string, pattern string, deflt float64) float64
 
 	Duration(name string) time.Duration
-	DurationOr(name string, deflt int64) time.Duration
+	DurationOr(name string, deflt int) time.Duration
+	DurationAnd(name string, pattern string) (time.Duration, bool)
+	DurationAndOr(name string, pattern string, deflt int) time.Duration
 }
 
 // Valuer is a abstraction for config value, which can convert into multiple types.
@@ -48,6 +53,7 @@ type Valuer interface {
 	String() string
 	StringOr(deflt string) string
 	StringAnd(pattern string) (string, bool)
+	StringAndOr(pattern string, deflt string) string
 
 	Bool() bool
 	BoolOr(deflt bool) bool
@@ -55,13 +61,17 @@ type Valuer interface {
 	Int() int
 	IntOr(deflt int) int
 	IntAnd(pattern string) (int, bool)
+	IntAndOr(pattern string, deflt int) int
 
 	Float() float64
 	FloatOr(deflt float64) float64
 	FloatAnd(pattern string) (float64, bool)
+	FloatAndOr(pattern string, deflt float64) float64
 
 	Duration() time.Duration
-	DurationOr(deflt int64) time.Duration
+	DurationOr(deflt int) time.Duration
+	DurationAnd(pattern string) (time.Duration, bool)
+	DurationAndOr(pattern string, deflt int) time.Duration
 }
 
 // Patterner is abstraction which do validation work.
@@ -69,7 +79,7 @@ type Valuer interface {
 //
 // string pattern use the native regular expression to validate the value.
 //
-// int and float64 pattern use the basic if-like conditions to calculate and validate
+// int(time.Duration) and float64 pattern use the basic if-like conditions to calculate and validate
 // the value, use 'N' as placeholder for number, bit operation is not supported,
 // for example:
 //     "N>2"

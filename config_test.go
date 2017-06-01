@@ -120,6 +120,7 @@ func TestConfigGetString(t *testing.T) {
 	assert.Check(t, c.Has("foo"), false)
 	assert.Check(t, c.String("foo"), "")
 	assert.Check(t, c.StringOr("foo", "bar"), "bar")
+
 	c.Set("www", "mmm")
 	res, ok := c.StringAnd("www", "^m")
 	assert.Check(t, ok, true)
@@ -130,6 +131,10 @@ func TestConfigGetString(t *testing.T) {
 	res, ok = c.StringAnd("mmm", "^w")
 	assert.Check(t, ok, false)
 	assert.Check(t, res, "")
+
+	assert.Check(t, c.StringAndOr("www", "^m", "lll"), "mmm")
+	assert.Check(t, c.StringAndOr("www", "^w", "lll"), "lll")
+	assert.Check(t, c.StringAndOr("mmm", "^w", "lll"), "lll")
 
 	assert.Check(t, c.Has("test_env"), false)
 	os.Setenv("test_env", "string")
@@ -172,6 +177,10 @@ func TestConfigGetInt(t *testing.T) {
 	assert.Check(t, ok, false)
 	assert.Check(t, res, 0)
 
+	assert.Check(t, c.IntAndOr("int", "N>3", 333), 33)
+	assert.Check(t, c.IntAndOr("int", "N>33", 333), 333)
+	assert.Check(t, c.IntAndOr("non", "N>33", 3333), 3333)
+
 	assert.Check(t, c.Has("test_env"), false)
 	os.Setenv("test_env", "1111")
 	defer func() { os.Unsetenv("test_env") }()
@@ -196,6 +205,10 @@ func TestConfigGetFloat(t *testing.T) {
 	assert.Check(t, ok, false)
 	assert.Check(t, res, 0.0)
 
+	assert.Check(t, c.FloatAndOr("float", "N>33.3", 33.3), 333.3)
+	assert.Check(t, c.FloatAndOr("float", "N>333.3", 33.3), 33.3)
+	assert.Check(t, c.FloatAndOr("non", "N>33.3", 33.33), 33.33)
+
 	assert.Check(t, c.Has("test_env"), false)
 	os.Setenv("test_env", "11.11")
 	defer func() { os.Unsetenv("test_env") }()
@@ -212,6 +225,17 @@ func TestConfigGetDuration(t *testing.T) {
 	assert.Check(t, c.Has("tt"), false)
 	assert.Check(t, c.Duration("tt"), time.Duration(0))
 	assert.Check(t, c.DurationOr("tt", 333), time.Duration(333))
+
+	res, ok := c.DurationAnd("t", "N>30")
+	assert.Check(t, ok, true)
+	assert.Check(t, res, time.Duration(300))
+	res, ok = c.DurationAnd("non", "N>1")
+	assert.Check(t, ok, false)
+	assert.Check(t, res, time.Duration(0))
+
+	assert.Check(t, c.DurationAndOr("t", "N>30", 333), time.Duration(300))
+	assert.Check(t, c.DurationAndOr("t", "N>300", 333), time.Duration(333))
+	assert.Check(t, c.DurationAndOr("non", "N>33", 33), time.Duration(33))
 
 	assert.Check(t, c.Has("test_env"), false)
 	os.Setenv("test_env", "1111")

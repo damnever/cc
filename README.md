@@ -60,7 +60,7 @@ p := c.Pattern("pattern_key_name")
 ok := p.ValidateString("a string")
 ```
 
-For `int` and `float`, `cc` use if-like condition to do similar work.
+For `int`(`time.Duration`) and `float`, `cc` use if-like condition to do similar work.
 Assume we have `threhold: "N>=30&&N<=80"` in config file, we can use it like this:
 ```go
 p := c.Pattern("threhold")
@@ -70,6 +70,11 @@ Or, using a pattern to validate the number:
 ```go
 ni, ok := c.IntAnd("int_key", "N>50")
 nf, ok := c.FloatAnd("float_key", "N/100>=0.3")
+
+// or, given a default value
+ni = c.IntAndOr("int_key", "N>50", 51)
+nf = c.FloatAndOr("int_key", "N/100>=0.3", 40)
+d := c.DurationAndOr("duration", "N>20&&N<=100", 50)
 ```
 NOTE: bit operation is not supported.
 
