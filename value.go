@@ -174,6 +174,40 @@ func (v *Value) IntAndOr(pattern string, deflt int) int {
 	return deflt
 }
 
+// Int64 returns the int64 value, returns 0 if not exists.
+func (v *Value) Int64() int64 {
+	return v.Int64Or(0)
+}
+
+// Int64Or returns the int64 value, returns the deflt if not exists.
+func (v *Value) Int64Or(deflt int64) int64 {
+	return toInt64(v.v, deflt)
+}
+
+// Int64And returns the (int64 value, true) if pattern matched,
+// otherwise returns (0, false). NOTE: we convert all numbers into
+// float64 then validate.
+func (v *Value) Int64And(pattern string) (int64, bool) {
+	if !v.Exist() {
+		return 0, false
+	}
+	p := NewPattern(pattern)
+	if n := v.Int64(); p.ValidateFloat(float64(n)) {
+		return n, true
+	}
+	return 0, false
+}
+
+// Int64AndOr returns the int value if pattern matched,
+// otherwise returns the deflt. NOTE: we convert all numbers into
+// float64 then validate.
+func (v *Value) Int64AndOr(pattern string, deflt int64) int64 {
+	if n, ok := v.Int64And(pattern); ok {
+		return n
+	}
+	return deflt
+}
+
 // Float returns the float64 value, returns 0.0 if not exists.
 func (v *Value) Float() float64 {
 	return v.FloatOr(0.0)
@@ -213,20 +247,22 @@ func (v *Value) Duration() time.Duration {
 
 // DurationOr returns the time.Duration value, returns time.Duration(deflt)
 // if not exists.
-func (v *Value) DurationOr(deflt int) time.Duration {
-	return time.Duration(v.IntOr(deflt))
+func (v *Value) DurationOr(deflt int64) time.Duration {
+	return time.Duration(v.Int64Or(deflt))
 }
 
 // DurationAnd returns the (time.Duration(value), true) if pattern matched,
-// otherwise (time.Duration(0), false) returned.
+// otherwise (time.Duration(0), false) returned. NOTE: we convert all numbers
+// into float64 then validate.
 func (v *Value) DurationAnd(pattern string) (time.Duration, bool) {
-	n, ok := v.IntAnd(pattern)
+	n, ok := v.Int64And(pattern)
 	return time.Duration(n), ok
 }
 
 // DurationAndOr returns the time.Duration value if pattern matched,
-// otherwise returns the deflt.
-func (v *Value) DurationAndOr(pattern string, deflt int) time.Duration {
+// otherwise returns the deflt. NOTE: we convert all numbers into
+// float64 then validate.
+func (v *Value) DurationAndOr(pattern string, deflt int64) time.Duration {
 	if d, ok := v.DurationAnd(pattern); ok {
 		return d
 	}

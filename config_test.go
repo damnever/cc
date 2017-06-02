@@ -1,6 +1,7 @@
 package cc
 
 import (
+	"flag"
 	"os"
 	"testing"
 	"time"
@@ -141,6 +142,11 @@ func TestConfigGetString(t *testing.T) {
 	defer func() { os.Unsetenv("test_env") }()
 	assert.Check(t, c.Has("test_env"), true)
 	assert.Check(t, c.StringOr("test_env", "XXX"), "string")
+
+	flag.String("str_flag", "do", "usage")
+	c.ParseFlags()
+	assert.Check(t, c.Has("str_flag"), true)
+	assert.Check(t, c.String("str_flag"), "do")
 }
 
 func TestConfigGetBool(t *testing.T) {
@@ -158,6 +164,11 @@ func TestConfigGetBool(t *testing.T) {
 	defer func() { os.Unsetenv("test_env") }()
 	assert.Check(t, c.Has("test_env"), true)
 	assert.Check(t, c.BoolOr("test_env", false), true)
+
+	flag.Bool("bool_flag", true, "usage")
+	c.ParseFlags()
+	assert.Check(t, c.Has("bool_flag"), true)
+	assert.Check(t, c.Bool("bool_flag"), true)
 }
 
 func TestConfigGetInt(t *testing.T) {
@@ -186,6 +197,14 @@ func TestConfigGetInt(t *testing.T) {
 	defer func() { os.Unsetenv("test_env") }()
 	assert.Check(t, c.Has("test_env"), true)
 	assert.Check(t, c.IntOr("test_env", 11), 1111)
+
+	flag.Int("int_flag", 32, "usage")
+	flag.Int64("int64_flag", 64, "usage")
+	c.ParseFlags()
+	assert.Check(t, c.Has("int_flag"), true)
+	assert.Check(t, c.Int("int_flag"), 32)
+	assert.Check(t, c.Has("int64_flag"), true)
+	assert.Check(t, c.Int64("int64_flag"), int64(64))
 }
 
 func TestConfigGetFloat(t *testing.T) {
@@ -214,6 +233,11 @@ func TestConfigGetFloat(t *testing.T) {
 	defer func() { os.Unsetenv("test_env") }()
 	assert.Check(t, c.Has("test_env"), true)
 	assert.Check(t, c.FloatOr("test_env", 1.1), 11.11)
+
+	flag.Float64("float_flag", 64.64, "usage")
+	c.ParseFlags()
+	assert.Check(t, c.Has("float_flag"), true)
+	assert.Check(t, c.Float("float_flag"), 64.64)
 }
 
 func TestConfigGetDuration(t *testing.T) {
@@ -242,4 +266,9 @@ func TestConfigGetDuration(t *testing.T) {
 	defer func() { os.Unsetenv("test_env") }()
 	assert.Check(t, c.Has("test_env"), true)
 	assert.Check(t, c.DurationOr("test_env", 11), time.Duration(1111))
+
+	flag.Duration("duration_flag", 6464, "usage")
+	c.ParseFlags()
+	assert.Check(t, c.Has("duration_flag"), true)
+	assert.Check(t, c.Duration("duration_flag"), time.Duration(6464))
 }

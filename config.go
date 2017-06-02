@@ -8,27 +8,30 @@ import (
 	"time"
 )
 
-// TODO(damnever): cooperate with flag?
-
-// Config implements the Configer interface. The environment variable
-// will shadow the value from config if they have the same name,
-// Only the String/Bool/Int/Float/Duration family use environment
-// variables, if any environment variable with same name is set and
+// Config implements the Configer interface.
+// The priorities: flag > environment variables > normal configs.
+// Only the String/Bool/Int/Float/Duration family use environment variables
+// and flags, if any environment variable with same name is set and
 // it isn't empty, the Bool/BoolOr will return true.
 type Config struct {
-	kv map[string]interface{}
+	flags map[string]interface{}
+	kv    map[string]interface{}
 }
 
 // NewConfig creates a new empty Config.
 func NewConfig() *Config {
-	return &Config{
+	c := &Config{
 		kv: make(map[string]interface{}),
 	}
+	c.ParseFlags()
+	return c
 }
 
 // NewConfigFrom creates a new Config from map.
 func NewConfigFrom(kv map[string]interface{}) *Config {
-	return &Config{kv: kv}
+	c := &Config{kv: kv}
+	c.ParseFlags()
+	return c
 }
 
 // NewConfigFromJSON creates a new Config from JSON bytes.
@@ -57,6 +60,11 @@ func NewConfigFromFile(fpath string) (*Config, error) {
 		return nil, err
 	}
 	return c, nil
+}
+
+// ParseFlags parse the flags explicitly, in genral, you don't.
+func (c *Config) ParseFlags() {
+	c.flags = parseFlags()
 }
 
 // MergeFromFile merges config data from file, the new config will replace
@@ -118,17 +126,21 @@ func (c *Config) Merge(config *Config) error {
 }
 
 // KV returns the Config's internal data as a string map.
+// Excludes the flags and environment variables.
 func (c *Config) KV() map[string]interface{} {
 	return c.kv
 }
 
 // Has returns true if the name has a value, otherwise false.
 func (c *Config) Has(name string) bool {
+	if _, in := c.flags[name]; in {
+		return true
+	}
 	if env := os.Getenv(name); env != "" {
 		return true
 	}
-	_, exists := c.kv[name]
-	return exists
+	_, in := c.kv[name]
+	return in
 }
 
 // Must creates panic if name not found.
@@ -139,12 +151,13 @@ func (c *Config) Must(name string) {
 }
 
 // Raw returns the raw value by name.
-// No support for environment variable.
+// Excludes the flags and environment variable.
 func (c *Config) Raw(name string) interface{} {
 	return c.kv[name]
 }
 
 // Value returns a Valuer by name.
+// Excludes the flags and environment variable.
 func (c *Config) Value(name string) Valuer {
 	v, ok := c.kv[name]
 	if !ok {
@@ -168,12 +181,13 @@ func (c *Config) SetDefault(name string, value interface{}) {
 	}
 }
 
-// Set set the value by name, it will replcae the exist value.
+// Set set the value by name, it will replace the exist value.
 func (c *Config) Set(name string, value interface{}) {
 	c.kv[name] = value
 }
 
 // Config returns a key-value sub Configer by name, the returned Configer can consider as a reference.
+// Excludes the flags and environment variable.
 func (c *Config) Config(name string) Configer {
 	if v, exists := c.kv[name]; exists {
 		switch x := v.(type) {
@@ -203,10 +217,13 @@ func (c *Config) String(name string) string {
 
 // StringOr returns the string value by name, returns the deflt if not found.
 func (c *Config) StringOr(name string, deflt string) string {
+	if v, ok := c.flags[name].(string); ok {
+		return v
+	}
 	if env := os.Getenv(name); env != "" {
 		return env
 	}
-	if v, exists := c.kv[name]; exists {
+	if v, in := c.kv[name]; in {
 		return toString(v, deflt)
 	}
 	return deflt
@@ -241,6 +258,9 @@ func (c *Config) Bool(name string) bool {
 
 // BoolOr returns the bool value by name, returns the deflt if not found.
 func (c *Config) BoolOr(name string, deflt bool) bool {
+	if v, ok := c.flags[name].(bool); ok {
+		return v
+	}
 	if env := os.Getenv(name); env != "" {
 		return true
 	}
@@ -257,6 +277,9 @@ func (c *Config) Int(name string) int {
 
 // IntOr returns the int value by name, returns the deflt if not found.
 func (c *Config) IntOr(name string, deflt int) int {
+	if v, ok := c.flags[name].(int); ok {
+		return v
+	}
 	if env := os.Getenv(name); env != "" {
 		if n, err := strconv.Atoi(env); err == nil {
 			return n
@@ -290,6 +313,51 @@ func (c *Config) IntAndOr(name string, pattern string, deflt int) int {
 	return deflt
 }
 
+// Int64 returns the int64 value by name, returns 0 if not found.
+func (c *Config) Int64(name string) int64 {
+	return c.Int64Or(name, 0)
+}
+
+// Int64Or returns the int64 value by name, returns the deflt if not found.
+func (c *Config) Int64Or(name string, deflt int64) int64 {
+	if v, ok := c.flags[name].(int64); ok {
+		return v
+	}
+	if env := os.Getenv(name); env != "" {
+		if n, err := strconv.ParseInt(env, 10, 64); err == nil {
+			return n
+		}
+	}
+	if v, exists := c.kv[name]; exists {
+		return toInt64(v, deflt)
+	}
+	return deflt
+}
+
+// Int64And returns the (int64 value, true) by name if pattern matched,
+// otherwise returns (0, false). NOTE: we convert all numbers into
+// float64 then validate.
+func (c *Config) Int64And(name string, pattern string) (int64, bool) {
+	if !c.Has(name) {
+		return 0, false
+	}
+	p := NewPattern(pattern)
+	if n := c.Int64(name); p.ValidateFloat(float64(n)) {
+		return n, true
+	}
+	return 0, false
+}
+
+// Int64AndOr returns the int64 value by name if pattern matched,
+// otherwise returns the deflt. NOTE: we convert all numbers into
+// float64 then validate.
+func (c *Config) Int64AndOr(name string, pattern string, deflt int64) int64 {
+	if n, ok := c.Int64And(name, pattern); ok {
+		return n
+	}
+	return deflt
+}
+
 // Float returns the float64 value by name, return 0.0 if not found.
 func (c *Config) Float(name string) float64 {
 	return c.FloatOr(name, 0.0)
@@ -297,6 +365,9 @@ func (c *Config) Float(name string) float64 {
 
 // FloatOr returns the float64 value by name, return deflt if not found.
 func (c *Config) FloatOr(name string, deflt float64) float64 {
+	if v, ok := c.flags[name].(float64); ok {
+		return v
+	}
 	if env := os.Getenv(name); env != "" {
 		if n, err := strconv.ParseFloat(env, 64); err == nil {
 			return n
@@ -338,19 +409,21 @@ func (c *Config) Duration(name string) time.Duration {
 
 // DurationOr returns the time.Duration value by name,
 // return time.Duration(deflt) if not found.
-func (c *Config) DurationOr(name string, deflt int) time.Duration {
-	return time.Duration(c.IntOr(name, deflt))
+func (c *Config) DurationOr(name string, deflt int64) time.Duration {
+	return time.Duration(c.Int64Or(name, deflt))
 }
 
 // DurationAnd returns the (time.Duration(value), true) by name if pattern matched,
-// otherwise (time.Duration(0), false) returned.
+// otherwise (time.Duration(0), false) returned. NOTE: we convert all numbers into
+// float64 then validate.
 func (c *Config) DurationAnd(name string, pattern string) (time.Duration, bool) {
-	n, ok := c.IntAnd(name, pattern)
+	n, ok := c.Int64And(name, pattern)
 	return time.Duration(n), ok
 }
 
 // DurationAndOr returns the time.Duration value by name if pattern matched,
-// otherwise returns the deflt.
-func (c *Config) DurationAndOr(name string, pattern string, deflt int) time.Duration {
-	return time.Duration(c.IntAndOr(name, pattern, deflt))
+// otherwise returns the deflt. NOTE: we convert all numbers into
+// float64 then validate.
+func (c *Config) DurationAndOr(name string, pattern string, deflt int64) time.Duration {
+	return time.Duration(c.Int64AndOr(name, pattern, deflt))
 }
