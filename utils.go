@@ -2,8 +2,10 @@ package cc
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -46,6 +48,37 @@ func unmarshalJSON(b []byte) (map[string]interface{}, error) {
 		return nil, err
 	}
 	return data, nil
+}
+
+func parseFlags() map[string]interface{} {
+	if !flag.Parsed() {
+		flag.Parse()
+	}
+
+	kv := map[string]interface{}{}
+
+	flag.VisitAll(func(f *flag.Flag) {
+		v := f.Value.(flag.Getter).Get()
+		switch x := v.(type) {
+		case string:
+			kv[f.Name] = x
+		case bool:
+			kv[f.Name] = x
+		case uint:
+			kv[f.Name] = int64(x)
+		case int:
+			kv[f.Name] = x
+		case uint64: // XXX: may overflow, ignore?
+			kv[f.Name] = int64(x)
+		case int64:
+			kv[f.Name] = x
+		case time.Duration:
+			kv[f.Name] = int64(x)
+		case float64:
+			kv[f.Name] = x
+		}
+	})
+	return kv
 }
 
 func toBool(v interface{}, deflt bool) bool {

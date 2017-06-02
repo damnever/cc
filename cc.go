@@ -29,15 +29,20 @@ type Configer interface {
 	IntAnd(name string, pattern string) (int, bool)
 	IntAndOr(name string, pattern string, deflt int) int
 
+	Int64(name string) int64
+	Int64Or(name string, deflt int64) int64
+	Int64And(name string, pattern string) (int64, bool)
+	Int64AndOr(name string, pattern string, deflt int64) int64
+
 	Float(name string) float64
 	FloatOr(name string, deflt float64) float64
 	FloatAnd(name string, pattern string) (float64, bool)
 	FloatAndOr(name string, pattern string, deflt float64) float64
 
 	Duration(name string) time.Duration
-	DurationOr(name string, deflt int) time.Duration
+	DurationOr(name string, deflt int64) time.Duration
 	DurationAnd(name string, pattern string) (time.Duration, bool)
-	DurationAndOr(name string, pattern string, deflt int) time.Duration
+	DurationAndOr(name string, pattern string, deflt int64) time.Duration
 }
 
 // Valuer is a abstraction for config value, which can convert into multiple types.
@@ -63,15 +68,20 @@ type Valuer interface {
 	IntAnd(pattern string) (int, bool)
 	IntAndOr(pattern string, deflt int) int
 
+	Int64() int64
+	Int64Or(deflt int64) int64
+	Int64And(pattern string) (int64, bool)
+	Int64AndOr(pattern string, deflt int64) int64
+
 	Float() float64
 	FloatOr(deflt float64) float64
 	FloatAnd(pattern string) (float64, bool)
 	FloatAndOr(pattern string, deflt float64) float64
 
 	Duration() time.Duration
-	DurationOr(deflt int) time.Duration
+	DurationOr(deflt int64) time.Duration
 	DurationAnd(pattern string) (time.Duration, bool)
-	DurationAndOr(pattern string, deflt int) time.Duration
+	DurationAndOr(pattern string, deflt int64) time.Duration
 }
 
 // Patterner is abstraction which do validation work.
