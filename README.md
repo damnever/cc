@@ -1,4 +1,4 @@
-## cc is a Golang library for configuration management.
+## cc - Golang Configuration Management for Humans™
 
 [![Build Status](https://travis-ci.org/damnever/cc.svg?branch=master)](https://travis-ci.org/damnever/cc) [![Go Report Card](https://goreportcard.com/badge/github.com/damnever/cc)](https://goreportcard.com/report/github.com/damnever/cc) [![GoDoc](https://godoc.org/github.com/damnever/cc?status.svg)](https://godoc.org/github.com/damnever/cc)
 
@@ -28,7 +28,13 @@ list[1].Int()
 // environment variables
 os.Setenv("float_env", "11.11")
 c.Float("float_env")
+
+// flags (import "flag")
+flag.Int("flag", 33, "usage")
+c.Int("flag")
 ```
+
+The priorities: `flags > environment variables > normal configs`
 
 #### Default configs
 
