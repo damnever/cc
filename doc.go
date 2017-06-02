@@ -20,9 +20,9 @@
 //		os.Setenv("float_env", "11.11")
 //		c.Float("float_env")
 //
-//      // flags
-//      flag.Int("flag", 33, "usage")
-//      c.Int("flag")
+//		// flags
+//		flag.Int("flag", 33, "usage")
+//		c.Int("flag")
 //
 // The priorities: flags > environment variables > normal configs
 //
