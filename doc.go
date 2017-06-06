@@ -25,6 +25,8 @@
 //		c.Int("flag")
 //
 // The priorities: flags > environment variables > normal configs
+// NOTE: we take empty string, false boolean and zero number value as default
+// value in flags, and those value has no priority.
 //
 //
 // Default Configs
