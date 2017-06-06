@@ -41,23 +41,23 @@ func (v *Value) Raw() interface{} {
 func (v *Value) Config() Configer {
 	switch x := v.v.(type) {
 	case Configer:
-		val := NewConfig()
+		val := newConfig()
 		for kx, kv := range x.KV() {
 			val.kv[kx] = kv
 		}
 		return val
 	case map[string]interface{}:
-		val := NewConfig()
+		val := newConfig()
 		for kx, kv := range x {
 			val.kv[kx] = kv
 		}
 		return val
 	case map[interface{}]interface{}:
-		val := NewConfig()
+		val := newConfig()
 		val.kv = unknownMapToStringMap(x)
 		return val
 	}
-	return NewConfig()
+	return newConfig()
 }
 
 // Map returns the value as a map, the modification on returned

@@ -9,7 +9,7 @@ import (
 
 var (
 	floatf  = flag.Float64("float-flag", 64.64, "for example")
-	stringf = flag.String("string-flag", "good job", "for example")
+	stringf = flag.String("string-flag", "", "for example")
 	intf    = flag.Int("int-flag", 64, "for example")
 )
 
@@ -17,7 +17,7 @@ func pp(c cc.Configer) {
 	fmt.Println("---")
 	fmt.Println(c.Int("int-flag"))
 	fmt.Println(c.Float("float-flag"))
-	fmt.Println(c.String("string-flag"))
+	fmt.Println(c.StringOr("string-flag", "bad job"))
 	fmt.Println(c.String("name"))
 	cc := c.Config("map")
 	fmt.Println(cc.Bool("key_one"))

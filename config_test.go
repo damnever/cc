@@ -166,9 +166,13 @@ func TestConfigGetBool(t *testing.T) {
 	assert.Check(t, c.BoolOr("test_env", false), true)
 
 	flag.Bool("bool_flag", true, "usage")
+	flag.Bool("bool_flag_default", false, "usage")
 	c.ParseFlags()
 	assert.Check(t, c.Has("bool_flag"), true)
 	assert.Check(t, c.Bool("bool_flag"), true)
+	assert.Check(t, c.Has("bool_flag_default"), true)
+	assert.Check(t, c.Bool("bool_flag_default"), false)
+	assert.Check(t, c.BoolOr("bool_flag_default", true), true)
 }
 
 func TestConfigGetInt(t *testing.T) {
@@ -200,11 +204,17 @@ func TestConfigGetInt(t *testing.T) {
 
 	flag.Int("int_flag", 32, "usage")
 	flag.Int64("int64_flag", 64, "usage")
+	flag.Int("int_flag_default", 0, "usage")
+	flag.Int64("int64_flag_default", 0, "usage")
 	c.ParseFlags()
 	assert.Check(t, c.Has("int_flag"), true)
 	assert.Check(t, c.Int("int_flag"), 32)
 	assert.Check(t, c.Has("int64_flag"), true)
 	assert.Check(t, c.Int64("int64_flag"), int64(64))
+	assert.Check(t, c.Has("int_flag_default"), true)
+	assert.Check(t, c.Has("int64_flag_default"), true)
+	assert.Check(t, c.IntOr("int_flag_default", 3232), 3232)
+	assert.Check(t, c.Int64Or("int64_flag_default", 6464), int64(6464))
 }
 
 func TestConfigGetFloat(t *testing.T) {
@@ -235,9 +245,10 @@ func TestConfigGetFloat(t *testing.T) {
 	assert.Check(t, c.FloatOr("test_env", 1.1), 11.11)
 
 	flag.Float64("float_flag", 64.64, "usage")
+	flag.Float64("float_flag_default", 0.0, "usage")
 	c.ParseFlags()
 	assert.Check(t, c.Has("float_flag"), true)
-	assert.Check(t, c.Float("float_flag"), 64.64)
+	assert.Check(t, c.FloatOr("float_flag_default", 3.3), 3.3)
 }
 
 func TestConfigGetDuration(t *testing.T) {
@@ -268,7 +279,9 @@ func TestConfigGetDuration(t *testing.T) {
 	assert.Check(t, c.DurationOr("test_env", 11), time.Duration(1111))
 
 	flag.Duration("duration_flag", 6464, "usage")
+	flag.Duration("duration_flag_default", 0, "usage")
 	c.ParseFlags()
 	assert.Check(t, c.Has("duration_flag"), true)
 	assert.Check(t, c.Duration("duration_flag"), time.Duration(6464))
+	assert.Check(t, c.DurationOr("duration_flag_default", 4646), time.Duration(4646))
 }
