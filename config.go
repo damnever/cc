@@ -13,23 +13,33 @@ import (
 // Only the String/Bool/Int/Float/Duration family use environment variables
 // and flags, if any environment variable with same name is set and
 // it isn't empty, the Bool/BoolOr will return true.
+// NOTE: we take empty string, false boolean and zero number value as default
+// value in flags, and those value has no priority.
 type Config struct {
 	flags map[string]interface{}
 	kv    map[string]interface{}
 }
 
-// NewConfig creates a new empty Config.
-func NewConfig() *Config {
-	c := &Config{
+func newConfig() *Config {
+	return &Config{
 		kv: make(map[string]interface{}),
 	}
+}
+
+// NewConfig creates a new empty Config.
+func NewConfig() *Config {
+	c := newConfig()
 	c.ParseFlags()
 	return c
 }
 
+func newConfigFrom(kv map[string]interface{}) *Config {
+	return &Config{kv: kv}
+}
+
 // NewConfigFrom creates a new Config from map.
 func NewConfigFrom(kv map[string]interface{}) *Config {
-	c := &Config{kv: kv}
+	c := newConfigFrom(kv)
 	c.ParseFlags()
 	return c
 }
@@ -194,18 +204,18 @@ func (c *Config) Config(name string) Configer {
 		case Configer:
 			return x
 		case map[string]interface{}:
-			child := NewConfigFrom(x)
+			child := newConfigFrom(x)
 			c.Set(name, child)
 			return child
 		case map[interface{}]interface{}:
-			child := NewConfig()
+			child := newConfig()
 			child.kv = unknownMapToStringMap(x)
 			c.Set(name, child)
 			return child
 		default:
 		}
 	}
-	child := NewConfig()
+	child := newConfig()
 	c.Set(name, child)
 	return child
 }
@@ -217,7 +227,7 @@ func (c *Config) String(name string) string {
 
 // StringOr returns the string value by name, returns the deflt if not found.
 func (c *Config) StringOr(name string, deflt string) string {
-	if v, ok := c.flags[name].(string); ok {
+	if v, ok := c.flags[name].(string); ok && v != "" {
 		return v
 	}
 	if env := os.Getenv(name); env != "" {
@@ -258,7 +268,7 @@ func (c *Config) Bool(name string) bool {
 
 // BoolOr returns the bool value by name, returns the deflt if not found.
 func (c *Config) BoolOr(name string, deflt bool) bool {
-	if v, ok := c.flags[name].(bool); ok {
+	if v, ok := c.flags[name].(bool); ok && v != false {
 		return v
 	}
 	if env := os.Getenv(name); env != "" {
@@ -277,7 +287,7 @@ func (c *Config) Int(name string) int {
 
 // IntOr returns the int value by name, returns the deflt if not found.
 func (c *Config) IntOr(name string, deflt int) int {
-	if v, ok := c.flags[name].(int); ok {
+	if v, ok := c.flags[name].(int); ok && v != 0 {
 		return v
 	}
 	if env := os.Getenv(name); env != "" {
@@ -320,7 +330,7 @@ func (c *Config) Int64(name string) int64 {
 
 // Int64Or returns the int64 value by name, returns the deflt if not found.
 func (c *Config) Int64Or(name string, deflt int64) int64 {
-	if v, ok := c.flags[name].(int64); ok {
+	if v, ok := c.flags[name].(int64); ok && v != int64(0) {
 		return v
 	}
 	if env := os.Getenv(name); env != "" {
@@ -365,7 +375,7 @@ func (c *Config) Float(name string) float64 {
 
 // FloatOr returns the float64 value by name, return deflt if not found.
 func (c *Config) FloatOr(name string, deflt float64) float64 {
-	if v, ok := c.flags[name].(float64); ok {
+	if v, ok := c.flags[name].(float64); ok && v != float64(0) {
 		return v
 	}
 	if env := os.Getenv(name); env != "" {
