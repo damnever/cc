@@ -186,7 +186,7 @@ func (c *Config) Pattern(name string) Patterner {
 
 // SetDefault set the default value by name if not found.
 func (c *Config) SetDefault(name string, value interface{}) {
-	if !c.Has(name) {
+	if _, in := c.kv[name]; !in {
 		c.kv[name] = value
 	}
 }

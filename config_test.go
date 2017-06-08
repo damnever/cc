@@ -90,6 +90,13 @@ func TestConfigPattern(t *testing.T) {
 	}
 }
 
+func TestConfigSetDefault(t *testing.T) {
+	flag.String("test_default", "", "usage")
+	c := NewConfig()
+	c.SetDefault("test_default", "wow")
+	assert.Check(t, c.String("test_default"), "wow")
+}
+
 func TestConfigGetConfig(t *testing.T) {
 	c := NewConfig()
 	c.Set("unknwn_map", map[interface{}]interface{}{"foo": "bar"})
