@@ -2,6 +2,7 @@ package rpn
 
 import (
 	"container/list"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -133,6 +134,12 @@ func New(s string) (*ReversePolishNotation, error) {
 	return &ReversePolishNotation{notation: notation}, nil
 }
 
+var (
+	errInvalidExpr  = errors.New("invalid expression")
+	errDivideByZero = errors.New("invalid expression, divide by zero")
+	errInvalidCond  = errors.New("invalid condition")
+)
+
 // Calculate calculate condition result with float64.
 func (rpn *ReversePolishNotation) Calculate(value float64) (bool, error) {
 	values := list.New()
@@ -142,135 +149,135 @@ func (rpn *ReversePolishNotation) Calculate(value float64) (bool, error) {
 		switch op {
 		case "+":
 			if values.Len() < 2 {
-				return false, fmt.Errorf("invalid expression")
+				return false, errInvalidExpr
 			}
 			num1, num2, ok := lastTwoNum(values)
 			if !ok {
-				return false, fmt.Errorf("invalid expression")
+				return false, errInvalidExpr
 			}
 			values.PushBack((num1 + num2))
 		case "-":
 			if values.Len() < 2 {
-				return false, fmt.Errorf("invalid expression")
+				return false, errInvalidExpr
 			}
 			num1, num2, ok := lastTwoNum(values)
 			if !ok {
-				return false, fmt.Errorf("invalid expression")
+				return false, errInvalidExpr
 			}
 			values.PushBack((num1 - num2))
 		case "*":
 			if values.Len() < 2 {
-				return false, fmt.Errorf("invalid expression")
+				return false, errInvalidExpr
 			}
 			num1, num2, ok := lastTwoNum(values)
 			if !ok {
-				return false, fmt.Errorf("invalid expression")
+				return false, errInvalidExpr
 			}
 			values.PushBack((num1 * num2))
 		case "/":
 			if values.Len() < 2 {
-				return false, fmt.Errorf("invalid expression")
+				return false, errInvalidExpr
 			}
 			num1, num2, ok := lastTwoNum(values)
 			if !ok {
-				return false, fmt.Errorf("invalid expression")
+				return false, errInvalidExpr
 			}
 			if num2 == 0.0 {
-				return false, fmt.Errorf("invalid expression, divide by zero")
+				return false, errDivideByZero
 			}
 			values.PushBack((num1 / num2))
 		case "%":
 			if values.Len() < 2 {
-				return false, fmt.Errorf("invalid expression")
+				return false, errInvalidExpr
 			}
 			num1, num2, ok := lastTwoNum(values)
 			if !ok {
-				return false, fmt.Errorf("invalid expression")
+				return false, errInvalidExpr
 			}
 			if num2 == 0.0 {
-				return false, fmt.Errorf("invalid expression, divide by zero")
+				return false, errDivideByZero
 			}
 			values.PushBack(float64(int(num1) % int(num2)))
 		case "<":
 			if values.Len() < 2 {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			num1, num2, ok := lastTwoNum(values)
 			if !ok {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			values.PushBack((num1 < num2))
 		case ">":
 			if values.Len() < 2 {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			num1, num2, ok := lastTwoNum(values)
 			if !ok {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			values.PushBack((num1 > num2))
 		case "<=":
 			if values.Len() < 2 {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			num1, num2, ok := lastTwoNum(values)
 			if !ok {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			values.PushBack((num1 <= num2))
 		case ">=":
 			if values.Len() < 2 {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			num1, num2, ok := lastTwoNum(values)
 			if !ok {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			values.PushBack((num1 >= num2))
 		case "==": // XXX: may someone compare bool values?
 			if values.Len() < 2 {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			num1, num2, ok := lastTwoNum(values)
 			if !ok {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			values.PushBack((num1 == num2))
 		case "!=": // XXX: may someone compare bool values?
 			if values.Len() < 2 {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			num1, num2, ok := lastTwoNum(values)
 			if !ok {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			values.PushBack((num1 != num2))
 		case "||":
 			if values.Len() < 2 {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			b1, b2, ok := lastTwoBool(values)
 			if !ok {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			values.PushBack((b1 || b2))
 		case "&&":
 			if values.Len() < 2 {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			b1, b2, ok := lastTwoBool(values)
 			if !ok {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			values.PushBack((b1 && b2))
 		case "!":
 			if values.Len() < 1 {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			e := values.Back()
 			b, ok := e.Value.(bool)
 			if !ok {
-				return false, fmt.Errorf("invalid condition")
+				return false, errInvalidCond
 			}
 			values.Remove(e)
 			values.PushBack((!b))
@@ -286,13 +293,13 @@ func (rpn *ReversePolishNotation) Calculate(value float64) (bool, error) {
 	}
 
 	if values.Len() != 1 {
-		return false, fmt.Errorf("invalid condition")
+		return false, errInvalidCond
 	}
 	e := values.Back()
 	if res, ok := e.Value.(bool); ok {
 		return res, nil
 	}
-	return false, fmt.Errorf("invalid condition")
+	return false, errInvalidCond
 }
 
 func lastTwoNum(values *list.List) (num1 float64, num2 float64, ok bool) {
